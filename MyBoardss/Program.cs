@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using MyBoardss.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,13 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 });
+
+builder.Services.AddDbContext<MyBoardsContext>(
+    option => option.UseMySql(
+        builder.Configuration.GetConnectionString("MyBoardsConnectionString"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
+    )
+);
 
 var app = builder.Build();
 

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MyBoardss")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b48b5e8bc4504ca002bf6d4980a14fcf6fb1999")]
 [assembly: System.Reflection.AssemblyProductAttribute("MyBoardss")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MyBoardss")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
