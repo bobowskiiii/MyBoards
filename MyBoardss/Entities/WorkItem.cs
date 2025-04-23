@@ -30,16 +30,12 @@ public abstract class WorkItem
     public int Priority { get; set; }
     
     //Epic
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
     
     //Issue
-    [Column(TypeName = "decimal(5,2)")]
-    public decimal Effort { get; set; }
+    
     
     //Task
-    public string Activity{ get; set; }
-    public decimal RemainingWork { get; set; }
+  
 
     public string Type { get; set; }
     
