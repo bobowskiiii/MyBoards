@@ -4,10 +4,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MyBoardss.Entities;
 
-public class WorkItem
+public class Epic : WorkItem
+{
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+
+public class Issue : WorkItem
+{
+    public decimal Effort { get; set; }
+}
+
+public class Task : WorkItem
+{
+    public string Activity { get; set; }
+    public decimal RemainingWork { get; set; }
+}
+
+public abstract class WorkItem
 {
     public int Id { get; set; }
-    public string State { get; set; }
+    
     public string Area { get; set; }
     public string IterationPath { get; set; }
     public int Priority { get; set; }
@@ -32,5 +49,6 @@ public class WorkItem
     public Guid UserId { get; set; }
     
     public List<Tag> Tags { get; set; } = new List<Tag>();
-    // public List<WorkItemTag> WorkItemTags { get; set; } = new List<WorkItemTag>();
+    public WorkState State { get; set; }
+    public Guid StateId { get; set; }
 }
