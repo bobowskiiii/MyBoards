@@ -25,7 +25,7 @@ public class MyBoardsContext : DbContext
         modelBuilder.Entity<WorkState>()
             .Property(s => s.State)
             .IsRequired()
-            .HasMaxLength(50);  
+            .HasMaxLength(60);  
         
         modelBuilder.Entity<Epic>().Property(x => x.EndDate).HasPrecision(3);
         modelBuilder.Entity<Task>().Property(x => x.Activity).HasMaxLength(200);
@@ -66,7 +66,7 @@ public class MyBoardsContext : DbContext
                             x.TagId,
                             x.WorkItemId
                         });
-                        wit.Property(x => x.PublicationDate).HasDefaultValueSql("getutcdate()");
+                        wit.Property(x => x.PublicationDate).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
                     }
                 );
             
@@ -74,7 +74,7 @@ public class MyBoardsContext : DbContext
     
         modelBuilder.Entity<Comment>(eb =>
         {
-            eb.Property(x => x.CreatedDate).HasDefaultValueSql("getutcdate()");
+            eb.Property(x => x.CreatedDate).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             eb.Property(x => x.UpdatedDate).ValueGeneratedOnUpdate();
 
         });
