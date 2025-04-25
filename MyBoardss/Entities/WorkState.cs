@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MyBoardss.Entities;
 
 public class WorkState

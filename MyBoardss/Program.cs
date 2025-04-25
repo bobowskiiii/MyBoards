@@ -36,5 +36,54 @@ if (app.Environment.IsDevelopment())
 }
 
 
+using var scope = app.Services.CreateScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<MyBoardsContext>();
+
+var pendingMigrations = dbContext.Database.GetPendingMigrations();
+if (pendingMigrations.Any())
+{
+    dbContext.Database.Migrate();
+    Console.WriteLine("Migracje zastosowane.");
+}
+
+
+var users = dbContext.Users.ToList();
+if (!users.Any())
+{
+    var user1 = new User()
+    {
+        FullName = "Jan Kowalski",
+        Email = "jKowalski@test.com",
+        
+        Address = new Address()
+        {
+            Country = "Poland",
+            City = "Warszawa",
+            PostalCode = "00-001",
+            Street = "Krakowska 12"
+        }
+
+    };
+    
+    var user2 = new User()
+    {
+        FullName = "Matthew Murdock",
+        Email = "mMurdock@test.com",
+        Address = new Address()
+        {
+            Country = "United States",
+            PostalCode = "10001",
+            City = "New York",
+            Street = "5th Avenue 12"
+        }
+
+    };
+    
+    dbContext.Users.AddRange(user1, user2);
+    dbContext.SaveChanges();
+}
+    
+
+
 // Uruchom aplikację
 app.Run();
