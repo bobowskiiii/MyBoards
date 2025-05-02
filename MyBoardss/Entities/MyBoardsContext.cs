@@ -28,8 +28,8 @@ public class MyBoardsContext : DbContext
         
         modelBuilder.Entity<Epic>().Property(x => x.EndDate).HasPrecision(3);
         modelBuilder.Entity<Task>().Property(x => x.Activity).HasMaxLength(200);
-        modelBuilder.Entity<Task>().Property(x => x.RemainingWork).HasPrecision(14, 2);
-        modelBuilder.Entity<Issue>().Property(x => x.Effort).HasColumnType("decimal(5,2)");
+        modelBuilder.Entity<Task>().Property(x => x.RemaningWork).HasPrecision(14, 2);
+        modelBuilder.Entity<Issue>().Property(x => x.Efford).HasColumnType("decimal(5,2)");
         
         modelBuilder.Entity<WorkItem>(eb =>
         {
@@ -46,7 +46,7 @@ public class MyBoardsContext : DbContext
 
             eb.HasOne(w => w.User)
                 .WithMany(u => u.WorkItems)
-                .HasForeignKey(w => w.UserId);
+                .HasForeignKey(w => w.AuthorId);
 
             eb.HasMany(w => w.Tags)
                 .WithMany(t => t.WorkItems)
@@ -92,6 +92,35 @@ public class MyBoardsContext : DbContext
             .HasData(new WorkState{ Id = Guid.NewGuid(), State = "To Do"},
                 new WorkState{ Id = Guid.NewGuid(), State = "Doing"},
                 new WorkState{ Id = Guid.NewGuid(), State = "Done"});
-        
+        modelBuilder.Entity<Tag>()
+            .HasData(new Tag
+            {
+                Id = 1,
+                Value = "Web",
+
+            }, new Tag
+            {
+                Id = 2,
+                Value = "UI",
+
+            }, new Tag
+            {
+                Id = 3,
+                Value = "Desktop",
+
+            }, new Tag
+            {
+                Id = 4,
+                Value = "API",
+
+            }, new Tag
+            {
+                Id = 5,
+                Value = "Service",
+
+            });
+
+
+
     }
 }

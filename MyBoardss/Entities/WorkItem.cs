@@ -12,13 +12,13 @@ public class Epic : WorkItem
 
 public class Issue : WorkItem
 {
-    public decimal Effort { get; set; }
+    public decimal Efford { get; set; }
 }
 
 public class Task : WorkItem
 {
     public string Activity { get; set; }
-    public decimal RemainingWork { get; set; }
+    public decimal RemaningWork { get; set; }
 }
 
 public abstract class WorkItem
@@ -42,7 +42,7 @@ public abstract class WorkItem
     public List<Comment> Comments { get; set; } = new List <Comment>();
     
     public User User { get; set; }
-    public Guid UserId { get; set; }
+    public Guid AuthorId { get; set; }
     
     public List<Tag> Tags { get; set; } = new List<Tag>();
     public WorkState State { get; set; }
