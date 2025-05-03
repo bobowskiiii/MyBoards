@@ -84,35 +84,6 @@ if (!users.Any())
 
 app.MapGet("data", async(MyBoardsContext db) =>
 {
-    // var epic = db.Epics.FirstOrDefault();
-    // var user = db.Users.FirstOrDefault(u => u.FullName == "Lola Hauck");
-    // return new
-    // {
-    //     epic,
-    //     user
-    // };
-    // var newComments = await db.Comments
-    //     .Where(c => c.CreatedDate > new DateTime(2022, 7, 23))
-    //     .ToListAsync();
-    //
-    // return newComments;
-
-    // var top5comments = await db.Comments
-    //     .OrderByDescending(c => c.CreatedDate)
-    //     .Take(5)
-    //     .ToListAsync();
-    // return top5comments;
-
-    // var statesCount = await db.WorkItems
-    //     .GroupBy(x => x.StateId)
-    //     .Select(g => new
-    //     {
-    //         stateId = g.Key,
-    //         count = g.Count()
-    //     })
-    //     .ToListAsync();
-    // return statesCount;
-
     var onHold = await db.Epics
         .Where(e => e.State.State == "On Hold")
         .OrderBy(e => e.Priority)
@@ -145,6 +116,18 @@ app.MapGet("data", async(MyBoardsContext db) =>
 .WithName("GetTags")
 .WithTags("Tags")
 .Produces<List<Tag>>(StatusCodes.Status200OK);
+
+
+app.MapPost("update", async (MyBoardsContext db) =>
+{
+    var epic = await db.Epics.FirstAsync(epic => epic.Id == 1);
+    
+    epic.Area = "Updated Area";
+    epic.Priority = 1;
+    epic.StartDate = new DateTime(2025, 10, 31);
+
+    await db.SaveChangesAsync();
+});
 
 // Uruchom aplikację
 app.Run();
