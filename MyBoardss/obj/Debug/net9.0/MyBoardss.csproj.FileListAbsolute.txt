@@ -106,3 +106,4 @@
 /Users/sbobowski/RiderProjects/MyBoardss/MyBoardss/bin/Debug/net9.0/tr/Microsoft.CodeAnalysis.Workspaces.resources.dll
 /Users/sbobowski/RiderProjects/MyBoardss/MyBoardss/bin/Debug/net9.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.resources.dll
 /Users/sbobowski/RiderProjects/MyBoardss/MyBoardss/bin/Debug/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sbobowski/RiderProjects/MyBoardss/MyBoardss/bin/Debug/net9.0/Bogus.dll

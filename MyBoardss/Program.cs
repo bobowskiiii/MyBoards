@@ -1,11 +1,17 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MyBoardss.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Dodaj usługi do kontenera DI
+// Konfiguracja usług
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -15,8 +21,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddDbContext<MyBoardsContext>(
-    option => option.UseMySql(
+builder.Services.AddDbContext<MyBoardsContext>(options =>
+    options.UseMySql(
         builder.Configuration.GetConnectionString("MyBoardsConnectionString"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
     )
@@ -24,65 +30,19 @@ builder.Services.AddDbContext<MyBoardsContext>(
 
 var app = builder.Build();
 
-// Konfiguracja middleware
+
+//Konfiguracja Middleware
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyBoards API v1");
-    c.RoutePrefix = string.Empty; // Otwiera Swaggera od razu na stronie głównej
+    c.RoutePrefix = string.Empty;
 });
 
+await SeedIfNecessary(app);
 
-
-using var scope = app.Services.CreateScope();
-var dbContext = scope.ServiceProvider.GetRequiredService<MyBoardsContext>();
-
-var pendingMigrations = dbContext.Database.GetPendingMigrations();
-if (pendingMigrations.Any())
-{
-    dbContext.Database.Migrate();
-    Console.WriteLine("Migracje zastosowane.");
-}
-
-
-var users = dbContext.Users.ToList();
-if (!users.Any())
-{
-    var user1 = new User()
-    {
-        FullName = "Jan Kowalski",
-        Email = "jKowalski@test.com",
-        
-        Address = new Address()
-        {
-            Country = "Poland",
-            City = "Warszawa",
-            PostalCode = "00-001",
-            Street = "Krakowska 12"
-        }
-
-    };
-    
-    var user2 = new User()
-    {
-        FullName = "Matthew Murdock",
-        Email = "mMurdock@test.com",
-        Address = new Address()
-        {
-            Country = "United States",
-            PostalCode = "10001",
-            City = "New York",
-            Street = "5th Avenue 12"
-        }
-
-    };
-    
-    dbContext.Users.AddRange(user1, user2);
-    dbContext.SaveChanges();
-}
-
-
-app.MapGet("data", async(MyBoardsContext db) =>
+// Przykładowy endpoint GET
+app.MapGet("/data", async (MyBoardsContext db) =>
 {
     var onHold = await db.Epics
         .Where(e => e.State.State == "On Hold")
@@ -91,13 +51,10 @@ app.MapGet("data", async(MyBoardsContext db) =>
 
     var mostCommentsUser = await db.Comments
         .GroupBy(c => c.AuthorId)
-        .Select(g => new
-        {
-            AuthorId = g.Key,
-            Count = g.Count()
-        })
+        .Select(g => new { AuthorId = g.Key, Count = g.Count() })
         .OrderByDescending(x => x.Count)
         .FirstOrDefaultAsync();
+
     if (mostCommentsUser != null)
     {
         var user = await db.Users
@@ -109,19 +66,20 @@ app.MapGet("data", async(MyBoardsContext db) =>
                 u.Address
             })
             .FirstOrDefaultAsync();
+
         return user;
     }
+
     return null;
-})
-.WithName("GetTags")
-.WithTags("Tags")
-.Produces<List<Tag>>(StatusCodes.Status200OK);
+});
 
-
-app.MapPost("update", async (MyBoardsContext db) =>
+// Przykładowy endpoint POST (update)
+app.MapPost("/update", async (MyBoardsContext db) =>
 {
     var epic = await db.Epics.FirstAsync(epic => epic.Id == 1);
-    
+    var onHoldState = await db.WorkStates.FirstAsync(w => w.State == "On Hold");
+
+    epic.StateId = onHoldState.Id;
     epic.Area = "Updated Area";
     epic.Priority = 1;
     epic.StartDate = new DateTime(2025, 10, 31);
@@ -129,5 +87,135 @@ app.MapPost("update", async (MyBoardsContext db) =>
     await db.SaveChangesAsync();
 });
 
-// Uruchom aplikację
+app.MapPost("create", async (MyBoardsContext db) =>
+{
+    Tag mvcTag = new Tag()
+    {
+        Value = "MVC"
+    };
+    Tag aspTag = new Tag()
+    {
+        Value = "ASP"
+    };
+    var tagsList = new List<Tag>() { mvcTag, aspTag };
+    
+    await db.AddRangeAsync(tagsList);;
+    await db.SaveChangesAsync();   
+    return new
+    {
+        mvcTag,
+        aspTag
+    };
+});
+
+//POST z dodawaniem relacji 1:1
+app.MapPost("create_entity", async (MyBoardsContext db) =>
+{
+    var address = new Address()
+    {
+        City = "Warsaw",
+        Country = "Poland",
+        PostalCode = "00-001",
+        Street = "Bracka",
+    };
+
+    var user = new User()
+    {
+        FullName = "Matthew McConaughey",
+        Email = "mConaughey@gmail.com",
+        Address = address,
+    };
+    await db.AddAsync(user);
+    await db.SaveChangesAsync();
+});
+
+app.MapPost("add_WorkItem", async (MyBoardsContext db) =>
+{
+    // Sprawdź, czy użytkownik istnieje
+    var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse("08dd8b18-f027-44f5-8063-3d7c7e77a5a5"));
+    if (existingUser == null)
+    {
+        // Dodaj użytkownika, jeśli nie istnieje
+        existingUser = new User
+        {
+            Id = Guid.Parse("08dd8b18-f027-44f5-8063-3d7c7e77a5a5"),
+            FullName = "John Doe",
+            Email = "johndoe@example.com"
+        };
+        await db.Users.AddAsync(existingUser);
+        await db.SaveChangesAsync();
+    }
+
+    // Dodaj WorkItem
+    var workItem = new MyBoardss.Entities.Task
+    {
+        Area = "Area 1",
+        IterationPath = "Iteration 1",
+        Priority = 1,
+        Type = "Task",
+        Activity = "Activity 1",
+        RemaningWork = 5,
+        StateId = (await db.WorkStates.FirstAsync()).Id, 
+        AuthorId = existingUser.Id 
+    };
+
+    await db.AddAsync(workItem);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(workItem);
+});
+
+//POST - comments
+app.MapPost("add_comments", async (MyBoardsContext db) =>
+{
+    var user = new User()
+    {
+        FullName = "New User",
+        Email = "newUser@gmail.com",
+    };
+    var comment = new Comment()
+    {
+        Message = "No elo elo",
+        CreatedDate = new DateTime(2005, 04, 15).AddDays(5),
+        UpdatedDate = DateTime.Now,
+        WorkItemId = 2,
+        AuthorId = Guid.Parse("08dd8b18-f027-44f5-8063-3d7c7e77a5a5"),
+    };
+
+    await db.AddAsync(comment);
+    await db.SaveChangesAsync();
+});
+    
+//GET author data
+app.MapGet("authorid", async (MyBoardsContext db) =>
+{
+    var author = await db.Users
+        .Include(u => u.Comments)
+        .ThenInclude(c => c.WorkItem)
+        .Include(user => user.Address)
+        .FirstAsync(u => u.Id == Guid.Parse("08dd8b18-f027-44f5-8063-3d7c7e77a5a5"));
+
+    return author;
+
+});
+
+
 app.Run();
+
+
+
+
+static async System.Threading.Tasks.Task SeedIfNecessary(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<MyBoardsContext>();
+
+    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+    if (pendingMigrations.Any())
+    {
+        await dbContext.Database.MigrateAsync();
+        Console.WriteLine("Applied pending migrations.");
+    }
+
+    // SeedData.SeedDatabase(dbContext);
+}
