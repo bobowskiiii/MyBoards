@@ -199,6 +199,47 @@ app.MapGet("authorid", async (MyBoardsContext db) =>
 
 });
 
+// DELETE workItem where WorkItemId = 2
+
+ app.MapDelete("delete", async (MyBoardsContext db) =>
+ {
+     var workItemTags = await db.WorkItemTags
+         .Where(t => t.WorkItemId == 3)
+         .ToListAsync();
+
+     db.RemoveRange(workItemTags);
+     await db.SaveChangesAsync();
+ });
+
+//DELETE user & userComments where UserId = 1e1539f4-29c9-11f0-8204-41ce48fb126a
+ app.MapDelete("delete_user_id", async (MyBoardsContext db) =>
+ {
+     var user = await db.Users
+         .FirstOrDefaultAsync(u => u.Id == Guid.Parse("1e1539f4-29c9-11f0-8204-41ce48fb126a"));
+
+     var userComments = await db.Comments
+         .Where(c => c.AuthorId == user.Id)
+         .ToListAsync();
+     
+     db.RemoveRange(userComments);
+     await db.SaveChangesAsync();
+     
+     db.Users.Remove(user);
+     await db.SaveChangesAsync();
+ });
+
+//DELETE CLientCascade po stronie EF
+ app.MapDelete("delete_client_cascade", async (MyBoardsContext db) =>
+ {
+     var user = await db.Users
+         .Include(u => u.Comments)
+         .FirstAsync(u => u.Id == Guid.Parse("1e153882-29c9-11f0-8204-41ce48fb126a"));
+
+     db.Remove(user);
+     await db.SaveChangesAsync();
+
+ });
+
 
 app.Run();
 

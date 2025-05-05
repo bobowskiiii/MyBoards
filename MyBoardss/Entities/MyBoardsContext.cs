@@ -14,6 +14,7 @@ public class MyBoardsContext : DbContext
     public DbSet<Task> Tasks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<WorkItemTag> WorkItemTags { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<WorkState> WorkStates { get; set; }
@@ -37,7 +38,7 @@ public class MyBoardsContext : DbContext
                 .WithMany()
                 .HasForeignKey(w => w.StateId);
             
-            eb.Property(x => x.Area).HasColumnName("varchar(200)");
+            eb.Property(x => x.Area).HasColumnName("Area");
             eb.Property(x => x.IterationPath).HasColumnName("Iteration_Path");
             eb.Property(x => x.Priority).HasDefaultValue(1);
             eb.HasMany(w => w.Comments)
@@ -79,7 +80,7 @@ public class MyBoardsContext : DbContext
             eb.HasOne(c => c.Author)
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.AuthorId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.ClientCascade);
 
         });
         
