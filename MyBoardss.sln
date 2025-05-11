@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyBoardss", "MyBoardss\MyBoardss.csproj", "{16A238FA-3792-4FE9-88B0-427972B3997F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyBoards.Benchmark", "MyBoards.Benchmark\MyBoards.Benchmark.csproj", "{38BA4015-1D1B-400B-A69A-370789C01138}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{16A238FA-3792-4FE9-88B0-427972B3997F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16A238FA-3792-4FE9-88B0-427972B3997F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16A238FA-3792-4FE9-88B0-427972B3997F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38BA4015-1D1B-400B-A69A-370789C01138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38BA4015-1D1B-400B-A69A-370789C01138}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38BA4015-1D1B-400B-A69A-370789C01138}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38BA4015-1D1B-400B-A69A-370789C01138}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

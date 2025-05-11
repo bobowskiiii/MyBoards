@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MyBoardss.Entities.ViewModels;
 
 namespace MyBoardss.Entities;
 
@@ -18,6 +19,7 @@ public class MyBoardsContext : DbContext
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<WorkState> WorkStates { get; set; }
+    public DbSet<TopAuthor> ViewTopAuthors { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -120,8 +122,13 @@ public class MyBoardsContext : DbContext
                 Value = "Service",
 
             });
-
-
-
+        
+        modelBuilder.Entity<TopAuthor>(eb =>
+        {
+            eb.ToView("View_TopAuthors");
+            eb.HasNoKey();
+        });
+        
+        
     }
 }

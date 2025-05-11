@@ -111,12 +111,13 @@ app.MapPost("create", async (MyBoardsContext db) =>
 //POST z dodawaniem relacji 1:1
 app.MapPost("create_entity", async (MyBoardsContext db) =>
 {
-    var address = new Address()
+    var address = new Address
     {
         City = "Warsaw",
         Country = "Poland",
         PostalCode = "00-001",
         Street = "Bracka",
+        User = null,
     };
 
     var user = new User()
@@ -187,17 +188,6 @@ app.MapPost("add_comments", async (MyBoardsContext db) =>
 });
     
 //GET author data
-app.MapGet("authorid", async (MyBoardsContext db) =>
-{
-    var author = await db.Users
-        .Include(u => u.Comments)
-        .ThenInclude(c => c.WorkItem)
-        .Include(user => user.Address)
-        .FirstAsync(u => u.Id == Guid.Parse("08dd8b18-f027-44f5-8063-3d7c7e77a5a5"));
-
-    return author;
-
-});
 
 // DELETE workItem where WorkItemId = 2
 
@@ -240,6 +230,31 @@ app.MapGet("authorid", async (MyBoardsContext db) =>
 
  });
 
+//GET raw SQL
+ app.MapGet("raw", async (MyBoardsContext db) =>
+ {
+     var minWorkItemsCount = 85;
+     var states = await db.WorkStates
+         .FromSqlInterpolated($@"
+        SELECT WS.Id, WS.State, COUNT(*) AS WorkItemCount
+        FROM myboards.WorkStates WS
+        JOIN myboards.WorkItems WI ON WS.Id = WI.StateId
+        GROUP BY WS.Id, WS.State;
+        ")
+         .ToListAsync();
+
+     await db.Database.ExecuteSqlRawAsync($"UPDATE myboards.Comments SET UpdatedDate = CURRENT_TIMESTAMP WHERE AuthorId = '1e153882-29c9-11f0-8204-41ce48fb126a';");
+     return states;
+ });
+
+//Data from View to List async
+ app.MapGet("ViewData", async (MyBoardsContext db) =>
+ {
+     var topAuthors = await db.ViewTopAuthors.ToListAsync();
+     return topAuthors;
+
+ });
+
 
 app.Run();
 
@@ -259,4 +274,10 @@ static async System.Threading.Tasks.Task SeedIfNecessary(WebApplication app)
     }
 
     // SeedData.SeedDatabase(dbContext);
+}
+public class WorkStateStats
+{
+    public int Id { get; set; }
+    public string StateName { get; set; }
+    public int WorkItemCount { get; set; }
 }
