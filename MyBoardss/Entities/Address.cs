@@ -9,13 +9,13 @@ public class Address
     public required string City { get; set; }
     public required string Street { get; set; }
     public required string PostalCode { get; set; }
-    public required User User { get; set; }
+    public virtual required User User { get; set; }
     public Guid UserId { get; set; }
     public Coordinate Coordinate { get; set; }
 }
 
 
-[Owned]
+//[Owned]
 public class Coordinate
 {
     public decimal? Longitude { get; set; }

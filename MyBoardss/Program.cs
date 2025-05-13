@@ -21,12 +21,16 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+
 builder.Services.AddDbContext<MyBoardsContext>(options =>
+{
+    options.UseLazyLoadingProxies();
     options.UseMySql(
         builder.Configuration.GetConnectionString("MyBoardsConnectionString"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
-    )
-);
+    );
+});
+
 
 var app = builder.Build();
 
@@ -255,6 +259,27 @@ app.MapPost("add_comments", async (MyBoardsContext db) =>
 
  });
 
+//Lazy Loading
+ app.MapGet("Lazy", async (MyBoardsContext db) =>
+ {
+     var withAddress = true;
+     var user = await db.Users
+         .FirstOrDefaultAsync(u => u.Id == Guid.Parse("1e1533a0-29c9-11f0-8204-41ce48fb126a"));
+
+     if (withAddress)
+     {
+         var result = new
+         {
+             FullName = user?.FullName,
+             Address = $"{user?.Address.City} {user?.Address.Street}"
+             
+         };
+         return result;
+     }
+
+     return new { FullName = user?.FullName, Address = "-" };
+ });
+
 
 app.Run();
 
@@ -272,7 +297,7 @@ static async System.Threading.Tasks.Task SeedIfNecessary(WebApplication app)
         await dbContext.Database.MigrateAsync();
         Console.WriteLine("Applied pending migrations.");
     }
-
+    
     // SeedData.SeedDatabase(dbContext);
 }
 public class WorkStateStats

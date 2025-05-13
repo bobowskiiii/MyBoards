@@ -39,12 +39,12 @@ public abstract class WorkItem
 
     public string Type { get; set; }
     
-    public List<Comment> Comments { get; set; } = new List <Comment>();
+    public virtual List<Comment> Comments { get; set; } = new List <Comment>();
     
-    public User User { get; set; }
+    public virtual User User { get; set; }
     public Guid AuthorId { get; set; }
     
-    public List<Tag> Tags { get; set; } = new List<Tag>();
-    public WorkState State { get; set; }
+    public virtual List<Tag> Tags { get; set; } = new List<Tag>();
+    public virtual WorkState State { get; set; }
     public Guid StateId { get; set; }
 }
