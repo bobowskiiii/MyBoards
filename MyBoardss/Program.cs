@@ -1,8 +1,3 @@
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using MyBoardss.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +19,12 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<MyBoardsContext>(options =>
 {
-    options.UseLazyLoadingProxies();
+    //lazy loading
+    // options.UseLazyLoadingProxies();
     options.UseMySql(
         builder.Configuration.GetConnectionString("MyBoardsConnectionString"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MyBoardsConnectionString")),
+        mySqlOptions => mySqlOptions.EnableStringComparisonTranslations() // Włączenie translacji
     );
 });
 
@@ -252,7 +249,7 @@ app.MapPost("add_comments", async (MyBoardsContext db) =>
  });
 
 //Data from View to List async
- app.MapGet("ViewData", async (MyBoardsContext db) =>
+ app.MapGet("viewData", async (MyBoardsContext db) =>
  {
      var topAuthors = await db.ViewTopAuthors.ToListAsync();
      return topAuthors;
@@ -260,7 +257,7 @@ app.MapPost("add_comments", async (MyBoardsContext db) =>
  });
 
 //Lazy Loading
- app.MapGet("Lazy", async (MyBoardsContext db) =>
+ app.MapGet("lazy", async (MyBoardsContext db) =>
  {
      var withAddress = true;
      var user = await db.Users
@@ -278,6 +275,66 @@ app.MapPost("add_comments", async (MyBoardsContext db) =>
      }
 
      return new { FullName = user?.FullName, Address = "-" };
+ });
+
+//Pagination & Expression
+ app.MapGet("pagination", async (MyBoardsContext db) =>
+ {
+     //user input
+     var filter = "a";
+     string sortBy = "FullName";
+     bool sortByDesc = true;
+     int pageNumber = 2;
+     int pageSize = 10;
+
+     var users = db.Users
+         .Where(u => filter == null || (u.Email.Contains(filter, StringComparison.OrdinalIgnoreCase)) || (u.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase)));
+
+     if (sortBy != null)
+     {
+         Dictionary<string, Expression<Func<User, object>>> userDictionary =
+             new Dictionary<string, Expression<Func<User, object>>>
+             {
+                 {nameof(User.Email), user => user.Email},
+                 {nameof(User.FullName), user => user.FullName}
+             };
+         var sortByExpression = userDictionary[sortBy];
+         users.OrderBy(userDictionary[sortBy]);
+         
+         users = sortByDesc
+             ? users.OrderByDescending(sortByExpression) 
+             : users.OrderBy(sortByExpression);
+         
+     }
+
+     var usersList = await users
+         .Skip((pageNumber - 1) * pageSize)
+         .Take(pageSize)
+         .ToListAsync();    
+     
+     var pagedResult = new PagedResult<User>(usersList, users.Count(), pageSize, pageNumber);
+     
+     
+     return pagedResult;
+     // if (sortByDesc)
+     // {
+     //     users = sortBy switch
+     //     {
+     //         nameof(User.Email) => users.OrderByDescending(u => u.Email),
+     //         nameof(User.FullName) => users.OrderByDescending(u => u.FullName),
+     //         _ => users
+     //     };
+     // }
+     //
+     // else
+     // {
+     //     users = sortBy switch
+     //     {
+     //         nameof(User.Email) => users.OrderBy(u => u.Email),
+     //         nameof(User.FullName) => users.OrderBy(u => u.FullName),
+     //         _ => users
+     //     };
+     // }
  });
 
 
